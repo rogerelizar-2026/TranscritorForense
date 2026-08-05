@@ -1,0 +1,30 @@
+# Configuração do Transcritor Forense
+
+# Hugging Face Token (obrigatório para pyannote.audio)
+huggingface_token: "hf_seu_token_aqui"
+
+# Modelos
+diarization_model: "pyannote/speaker-diarization-3.1"
+transcription_model: "large-v2"  # Whisper model: tiny, base, small, medium, large-v1, large-v2, large-v3
+embedding_model: "speechbrain/spkrec-ecapa-voxceleb"
+
+# Parâmetros de processamento
+min_speakers: 2
+max_speakers: 5
+language: "pt"  # Português
+
+# Thresholds
+speaker_identification_threshold: 0.75  # Similaridade mínima para identificar falante
+
+# Output
+output_dir: "output"
+samples_dir: "samples"
+formats:
+  - markdown
+  - html
+  - txt
+
+# Metadados forenses
+include_metadata: true
+include_hashes: true
+include_timestamps: true
