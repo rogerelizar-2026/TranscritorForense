@@ -1,1 +1,2 @@
-Nothing needs to be added to .gitignore since the changes only include markdown files (MANUAL_USUARIO.md and README.md) which are source/config files.
+LOG_VERSAO.md
+MANUAL_USUARIO.html
