@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual do Usuário - Transcritor Forense de Áudio</title>
+    <style>
+        /* Estilos gerais para impressão A4 */
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+            font-size: 11pt;
+        }
+        
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Cabeçalho */
+        header {
+            text-align: center;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 24pt;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 14pt;
+            font-style: italic;
+        }
+        
+        /* Títulos */
+        h2 {
+            color: #34495e;
+            font-size: 18pt;
+            border-left: 5px solid #3498db;
+            padding-left: 15px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            page-break-after: avoid;
+        }
+        
+        h3 {
+            color: #2c3e50;
+            font-size: 14pt;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            page-break-after: avoid;
+        }
+        
+        h4 {
+            color: #34495e;
+            font-size: 12pt;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+        
+        /* Parágrafos e listas */
+        p {
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+        
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        /* Tabelas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        th, td {
+            border: 1px solid #bdc3c7;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #34495e;
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #ecf0f1;
+        }
+        
+        /* Códigos e blocos */
+        pre, code {
+            font-family: "Courier New", Courier, monospace;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+        }
+        
+        pre {
+            padding: 15px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-size: 10pt;
+            page-break-inside: avoid;
+        }
+        
+        code {
+            padding: 2px 6px;
+            color: #e74c3c;
+        }
+        
+        pre code {
+            padding: 0;
+            border: none;
+            background: none;
+            color: #333;
+        }
+        
+        /* Blocos de destaque */
+        .info-box {
+            background-color: #e8f4f8;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        .warning-box {
+            background-color: #fef9e7;
+            border-left: 5px solid #f39c12;
+            padding: 15px;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        .important-box {
+            background-color: #fdedec;
+            border-left: 5px solid #e74c3c;
+            padding: 15px;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        .success-box {
+            background-color: #eafaf1;
+            border-left: 5px solid #27ae60;
+            padding: 15px;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        /* Fluxo de trabalho */
+        .workflow {
+            background-color: #f8f9fa;
+            border: 2px dashed #95a5a6;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+        
+        .workflow-arrow {
+            font-size: 18pt;
+            color: #3498db;
+            margin: 0 10px;
+        }
+        
+        /* Índice */
+        .toc {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .toc h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .toc ol {
+            list-style-type: decimal;
+        }
+        
+        .toc li {
+            margin-bottom: 10px;
+        }
+        
+        .toc a {
+            color: #2980b9;
+            text-decoration: none;
+        }
+        
+        /* Quebras de página */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        /* Rodapé */
+        footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #bdc3c7;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 10pt;
+        }
+        
+        /* Links */
+        a {
+            color: #3498db;
+            word-break: break-all;
+        }
+        
+        /* Checkbox */
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        /* Impressão */
+        @media print {
+            body {
+                font-size: 11pt;
+            }
+            
+            .container {
+                max-width: none;
+                padding: 0;
+            }
+            
+            a {
+                text-decoration: none;
+                color: #333;
+            }
+            
+            pre {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📘 Manual do Usuário</h1>
+            <p class="subtitle">Transcritor Forense de Áudio</p>
+            <p style="margin-top: 15px; color: #7f8c8d;">Guia completo passo a passo para instalação e uso da ferramenta de diarização de áudio</p>
+        </header>
+
+        <!-- Índice -->
+        <div class="toc">
+            <h3>📋 Índice</h3>
+            <ol>
+                <li><a href="#visao-geral">Visão Geral</a></li>
+                <li><a href="#pre-requisitos">Pré-requisitos</a></li>
+                <li><a href="#instalacao">Instalação Completa</a></li>
+                <li><a href="#configuracao-huggingface">Configuração do Hugging Face (Obrigatório)</a></li>
+                <li><a href="#primeiro-uso">Primeiro Uso - Diarizar um Áudio</a></li>
+                <li><a href="#interpretando-resultados">Interpretando os Resultados</a></li>
+                <li><a href="#gerando-relatorios">Gerando Relatórios Forenses</a></li>
+                <li><a href="#perguntas-frequentes">Perguntas Frequentes</a></li>
+                <li><a href="#suporte">Preciso de Ajuda!</a></li>
+            </ol>
+        </div>
+
+        <!-- Seção 1 -->
+        <section id="visao-geral">
+            <h2>1. Visão Geral</h2>
+            
+            <h3>O que esta ferramenta faz?</h3>
+            <p>Esta ferramenta transforma <strong>áudios de negociações gravadas</strong> em <strong>documentos textuais formatados</strong> com validade jurídica, identificando:</p>
+            <ul>
+                <li>✅ <strong>QUEM falou</strong> (diarização por análise espectral)</li>
+                <li>✅ <strong>QUANDO falou</strong> (timestamps precisos)</li>
+                <li>✅ <strong>O QUE foi dito</strong> (transcrição automática)</li>
+            </ul>
+
+            <h3>Para quem é esta ferramenta?</h3>
+            <ul>
+                <li><strong>Advogados</strong> que atuam em defesa do consumidor</li>
+                <li><strong>Consultores jurídicos</strong> que analisam gravações</li>
+                <li><strong>Peritos técnicos</strong> que produzem laudos de áudio</li>
+                <li><strong>Escritórios de advocacia</strong> que necessitam transcrever negociações</li>
+            </ul>
+
+            <h3>Fluxo de Trabalho</h3>
+            <div class="workflow">
+                <p><strong>Áudio Original</strong> 
+                <span class="workflow-arrow">→</span> <strong>Diarização</strong> 
+                <span class="workflow-arrow">→</span> <strong>Transcrição</strong> 
+                <span class="workflow-arrow">→</span> <strong>Identificação</strong> 
+                <span class="workflow-arrow">→</span> <strong>Relatório Forense</strong></p>
+                <p style="margin-top: 10px; font-size: 10pt; color: #7f8c8d;">(WAV/MP3) → (quem fala) → (o que diz) → (nomes reais) → (MD/TXT/HTML)</p>
+            </div>
+        </section>
+
+        <!-- Seção 2 -->
+        <section id="pre-requisitos">
+            <h2>2. Pré-requisitos</h2>
+            <p>Antes de começar, verifique se você tem:</p>
+
+            <h3>2.1. Sistema Operacional</h3>
+            <p><strong>Funciona em:</strong></p>
+            <ul>
+                <li>Windows 10/11</li>
+                <li>macOS 10.15+</li>
+                <li>Linux (Ubuntu 20.04+, Debian 11+)</li>
+            </ul>
+
+            <h3>2.2. Python 3.10 ou Superior</h3>
+            <p><strong>Como verificar:</strong></p>
+            <p>Abra o terminal (ou Prompt de Comando no Windows) e digite:</p>
+            <pre><code>python --version</code></pre>
+            
+            <div class="warning-box">
+                <p><strong>Se aparecer algo como <code>Python 3.9.x</code> ou inferior:</strong></p>
+                <p>Você precisa atualizar o Python:</p>
+                <ul>
+                    <li><strong>Windows:</strong> Baixe em https://www.python.org/downloads/windows/</li>
+                    <li><strong>macOS:</strong> <code>brew install python@3.10</code> (se tiver Homebrew)</li>
+                    <li><strong>Linux:</strong> <code>sudo apt update && sudo apt install python3.10</code></li>
+                </ul>
+            </div>
+
+            <h3>2.3. Espaço em Disco</h3>
+            <p>Você precisará de aproximadamente:</p>
+            <ul>
+                <li><strong>5 GB</strong> para as dependências</li>
+                <li><strong>2-10 GB</strong> para os modelos (baixados automaticamente)</li>
+                <li><strong>Espaço adicional</strong> para áudios e relatórios</li>
+            </ul>
+            <p><strong>Total recomendado:</strong> 20 GB livres</p>
+
+            <h3>2.4. Conexão com Internet</h3>
+            <p>Necessária apenas para:</p>
+            <ul>
+                <li>Instalação inicial (baixar dependências)</li>
+                <li>Primeiro uso (baixar modelos do Hugging Face)</li>
+            </ul>
+            <p>Depois de instalado, <strong>funciona offline</strong>.</p>
+
+            <h3>2.5. GPU (Opcional mas Recomendado)</h3>
+            <p>Se você tem uma placa de vídeo NVIDIA:</p>
+            <ul>
+                <li><strong>Vantagem:</strong> Processamento 10-20x mais rápido</li>
+                <li><strong>Requisito:</strong> Drivers CUDA instalados</li>
+                <li><strong>Verificar:</strong> <code>nvidia-smi</code> no terminal</li>
+            </ul>
+            <p><strong>Não tem GPU?</strong> Funciona normalmente na CPU, só será mais lento.</p>
+        </section>
+
+        <!-- Seção 3 -->
+        <section id="instalacao">
+            <h2>3. Instalação Completa</h2>
+            <p>Siga estes passos <strong>na ordem exata</strong>:</p>
+
+            <h3>Passo 3.1: Baixar o Projeto</h3>
+            <p>Abra o terminal e navegue até onde quer salvar o projeto:</p>
+            <pre><code>cd ~/Documentos  # ou qualquer pasta de sua preferência</code></pre>
+            <p>Clone o repositório (substitua pela URL real):</p>
+            <pre><code>git clone &lt;URL_DO_REPOSITORIO&gt; transcritor-forense
+cd transcritor-forense</code></pre>
+            <p><strong>Se não tem Git:</strong> Baixe o ZIP do repositório e extraia na pasta desejada.</p>
+
+            <h3>Passo 3.2: Criar Ambiente Virtual</h3>
+            <p>Um ambiente virtual isola as dependências deste projeto das outras instalações Python.</p>
+            
+            <p><strong>No Windows:</strong></p>
+            <pre><code>python -m venv venv
+venv\Scripts\activate</code></pre>
+
+            <p><strong>No Linux/macOS:</strong></p>
+            <pre><code>python -m venv venv
+source venv/bin/activate</code></pre>
+
+            <div class="success-box">
+                <p><strong>Como saber se funcionou?</strong></p>
+                <p>Você verá <code>(venv)</code> no início da linha do terminal:</p>
+                <pre><code>(venv) C:\Users\Voce\Documentos\transcritor-forense></code></pre>
+            </div>
+
+            <h3>Passo 3.3: Instalar Dependências</h3>
+            <p>Com o ambiente virtual ativado, execute:</p>
+            <pre><code>pip install --upgrade pip
+pip install -r requirements.txt</code></pre>
+
+            <p><strong>O que está acontecendo?</strong></p>
+            <p>O pip está baixando e instalando:</p>
+            <ul>
+                <li>pyannote.audio (diarização)</li>
+                <li>whisperx (transcrição)</li>
+                <li>speechbrain (identificação de voz)</li>
+                <li>torch (base de machine learning)</li>
+                <li>gradio (interface web)</li>
+                <li>E outras dependências...</li>
+            </ul>
+            <p>⏱️ <strong>Tempo estimado:</strong> 5-15 minutos</p>
+
+            <div class="info-box">
+                <p><strong>Dica:</strong> Se aparecer algum erro, tente:</p>
+                <pre><code>pip install -r requirements.txt --no-cache-dir</code></pre>
+            </div>
+
+            <h3>Passo 3.4: Verificar Instalação</h3>
+            <p>Execute um teste simples:</p>
+            <pre><code>python tests/test_formatter_standalone.py</code></pre>
+            <p>Se aparecer <code>OK</code> no final, a instalação básica está correta.</p>
+        </section>
+
+        <!-- Seção 4 -->
+        <div class="page-break"></div>
+        <section id="configuracao-huggingface">
+            <h2>4. Configuração do Hugging Face (OBRIGATÓRIO)</h2>
+            <p>Os modelos de diarização exigem autenticação. Siga <strong>exatamente</strong> estes passos:</p>
+
+            <h3>Passo 4.1: Criar Conta no Hugging Face</h3>
+            <ol>
+                <li>Acesse https://huggingface.co</li>
+                <li>Clique em <strong>"Sign Up"</strong> (canto superior direito)</li>
+                <li>Preencha:
+                    <ul>
+                        <li>Email válido</li>
+                        <li>Senha segura</li>
+                        <li>Username (nome de usuário)</li>
+                    </ul>
+                </li>
+                <li>Clique em <strong>"Create account"</strong></li>
+                <li>Verifique seu email (chegará uma mensagem de confirmação)</li>
+            </ol>
+
+            <h3>Passo 4.2: Aceitar Termos dos Modelos</h3>
+            <div class="important-box">
+                <p><strong>IMPORTANTE:</strong> Você precisa fazer isso para DOIS modelos.</p>
+            </div>
+
+            <h4>Modelo 1: Speaker Diarization</h4>
+            <ol>
+                <li>Acesse: https://huggingface.co/pyannote/speaker-diarization-3.1</li>
+                <li>Faça login se necessário</li>
+                <li>Role a página até encontrar um botão verde</li>
+                <li>Clique em <strong>"Agree and access repository"</strong></li>
+            </ol>
+
+            <h4>Modelo 2: Segmentation</h4>
+            <ol>
+                <li>Acesse: https://huggingface.co/pyannote/segmentation-3.0</li>
+                <li>Clique em <strong>"Agree and access repository"</strong></li>
+            </ol>
+
+            <h3>Passo 4.3: Gerar Token de Acesso</h3>
+            <ol>
+                <li>Acesse: https://huggingface.co/settings/tokens</li>
+                <li>Clique no botão <strong>"New token"</strong></li>
+                <li>Preencha:
+                    <ul>
+                        <li><strong>Name:</strong> <code>transcritor-forense</code> (ou qualquer nome)</li>
+                        <li><strong>Type:</strong> Selecione <strong>"Read"</strong> (leitura é suficiente)</li>
+                    </ul>
+                </li>
+                <li>Clique em <strong>"Generate token"</strong></li>
+                <li><strong>COPIE O TOKEN</strong> imediatamente</li>
+            </ol>
+
+            <div class="warning-box">
+                <p>⚠️ <strong>ATENÇÃO:</strong> O token aparece apenas UMA VEZ. Se perder, terá que gerar outro.</p>
+                <p>O token se parece com isto:</p>
+                <pre><code>hf_aBcDeFgHiJkLmNoPqRsTuVwXyZ123456789</code></pre>
+            </div>
+
+            <h3>Passo 4.4: Configurar Token no Projeto</h3>
+            <ol>
+                <li>Abra o arquivo <code>config.yaml</code> em um editor de texto:
+                    <ul>
+                        <li><strong>Windows (Bloco de Notas):</strong> <code>notepad config.yaml</code></li>
+                        <li><strong>Linux/macOS (nano):</strong> <code>nano config.yaml</code></li>
+                    </ul>
+                </li>
+                <li>Localize a linha:
+                    <pre><code>huggingface_token: "hf_seu_token_aqui"</code></pre>
+                </li>
+                <li>Substitua pelo SEU token:
+                    <pre><code>huggingface_token: "hf_aBcDeFgHiJkLmNoPqRsTuVwXyZ123456789"</code></pre>
+                </li>
+                <li>Salve o arquivo:
+                    <ul>
+                        <li><strong>Notepad:</strong> Arquivo → Salvar (ou Ctrl+S)</li>
+                        <li><strong>nano:</strong> Ctrl+O, Enter, Ctrl+X</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h3>Passo 4.5: Testar Configuração</h3>
+            <p>Inicie a aplicação para testar:</p>
+            <pre><code>python -m src.app</code></pre>
+            <p>Se aparecer:</p>
+            <pre><code>Running on local URL: http://localhost:7860</code></pre>
+            <div class="success-box">
+                <p>✅ <strong>Sucesso!</strong> A configuração está correta.</p>
+            </div>
+            <p>Pressione <code>Ctrl+C</code> para parar a aplicação.</p>
+        </section>
+
+        <!-- Seção 5 -->
+        <div class="page-break"></div>
+        <section id="primeiro-uso">
+            <h2>5. Primeiro Uso - Diarizar um Áudio</h2>
+            <p>Agora vamos processar seu primeiro áudio passo a passo.</p>
+
+            <h3>Passo 5.1: Preparar o Áudio</h3>
+            <p><strong>Formatos suportados:</strong></p>
+            <ul>
+                <li>WAV (recomendado - melhor qualidade)</li>
+                <li>MP3 (aceitável)</li>
+                <li>OGG, FLAC, M4A (também funcionam)</li>
+            </ul>
+
+            <h3>Dicas para melhor qualidade:</h3>
+            <table>
+                <tr>
+                    <th>Fator</th>
+                    <th>Ideal</th>
+                    <th>Evitar</th>
+                </tr>
+                <tr>
+                    <td>Formato</td>
+                    <td>WAV 16kHz</td>
+                    <td>MP3 128kbps ou menos</td>
+                </tr>
+                <tr>
+                    <td>Ruído</td>
+                    <td>Mínimo</td>
+                    <td>Música de fundo, estática</td>
+                </tr>
+                <tr>
+                    <td>Duração</td>
+                    <td>Até 30 min</td>
+                    <td>Áudios muito longos (&gt;1h)</td>
+                </tr>
+                <tr>
+                    <td>Falantes</td>
+                    <td>2-5 pessoas</td>
+                    <td>Muitas vozes simultâneas</td>
+                </tr>
+            </table>
+
+            <p><strong>Coloque seu áudio na pasta:</strong></p>
+            <pre><code>transcritor-forense/
+└── samples/
+    └── meu_audio.wav  ← coloque aqui</code></pre>
+
+            <h3>Passo 5.2: Iniciar a Aplicação</h3>
+            <p>No terminal, com o ambiente virtual ativado:</p>
+            <pre><code>python -m src.app</code></pre>
+            <p>Aguarde alguns segundos até aparecer:</p>
+            <pre><code>╭────────────────────────────────────────────────────╮
+│  Running on local URL: http://localhost:7860       │
+│                                                    │
+│  To create a public link, set `share=True`         │
+╰────────────────────────────────────────────────────╯</code></pre>
+
+            <h3>Passo 5.3: Acessar Interface Web</h3>
+            <ol>
+                <li>Abra seu navegador (Chrome, Firefox, Edge)</li>
+                <li>Digite na barra de endereços: <strong>http://localhost:7860</strong></li>
+                <li>A interface da aplicação carregará</li>
+            </ol>
+
+            <h3>Passo 5.4: Carregar o Áudio</h3>
+            <p>Na interface web:</p>
+            <ol>
+                <li>Localize a seção <strong>"📁 Upload de Áudio"</strong></li>
+                <li>Clique em <strong>"Browse files"</strong> ou <strong>"Upload"</strong></li>
+                <li>Navegue até a pasta <code>samples/</code></li>
+                <li>Selecione seu arquivo de áudio (ex: <code>meu_audio.wav</code>)</li>
+                <li>Aguarde o upload completar (barra de progresso)</li>
+            </ol>
+
+            <h3>Passo 5.5: (Opcional) Carregar Amostras de Referência</h3>
+            <p>Se você tem gravações conhecidas de cada falante:</p>
+            <p><strong>Exemplo:</strong></p>
+            <ul>
+                <li>Uma gravação clara da voz do cliente</li>
+                <li>Uma gravação clara da voz do atendente</li>
+            </ul>
+            <ol>
+                <li>Na seção <strong>"🎤 Amostras de Referência"</strong></li>
+                <li>Clique em <strong>"Adicionar Amostra"</strong></li>
+                <li>Para cada amostra:
+                    <ul>
+                        <li><strong>Nome:</strong> Digite o nome (ex: "Cliente", "Atendente")</li>
+                        <li><strong>Arquivo:</strong> Carregue o áudio de referência (5-30 segundos)</li>
+                    </ul>
+                </li>
+                <li>Repita para cada falante conhecido</li>
+            </ol>
+            <div class="info-box">
+                <p><strong>Nota:</strong> Este passo é opcional. Se não tiver amostras, poderá identificar os falantes manualmente depois.</p>
+            </div>
+
+            <h3>Passo 5.6: Configurar Parâmetros</h3>
+            <p>Na seção <strong>"⚙️ Configurações"</strong>, ajuste:</p>
+            <table>
+                <tr>
+                    <th>Campo</th>
+                    <th>Valor Sugerido</th>
+                    <th>Explicação</th>
+                </tr>
+                <tr>
+                    <td><strong>Mínimo de falantes</strong></td>
+                    <td><code>2</code></td>
+                    <td>Cliente + Atendente</td>
+                </tr>
+                <tr>
+                    <td><strong>Máximo de falantes</strong></td>
+                    <td><code>5</code></td>
+                    <td>Aumente se houver mais pessoas</td>
+                </tr>
+                <tr>
+                    <td><strong>Idioma</strong></td>
+                    <td><code>pt</code></td>
+                    <td>Português brasileiro</td>
+                </tr>
+                <tr>
+                    <td><strong>Threshold identificação</strong></td>
+                    <td><code>0.75</code></td>
+                    <td>Confiança mínima (0.0 a 1.0)</td>
+                </tr>
+            </table>
+
+            <p><strong>Quando ajustar?</strong></p>
+            <ul>
+                <li>Se souber que são apenas 2 pessoas: coloque <code>min=2, max=2</code></li>
+                <li>Se houver música ou ruído: aumente o threshold para <code>0.85</code></li>
+                <li>Se os falantes têm sotaques fortes: use threshold menor <code>0.65</code></li>
+            </ul>
+
+            <h3>Passo 5.7: Processar o Áudio</h3>
+            <ol>
+                <li>Clique no botão <strong>"🔄 Processar Áudio"</strong></li>
+                <li>Aguarde o processamento</li>
+            </ol>
+
+            <p><strong>Barra de progresso mostrará:</strong></p>
+            <pre><code>[1/4] Diarizando áudio...
+[2/4] Transcrevendo...
+[3/4] Identificando falantes...
+[4/4] Finalizando...</code></pre>
+
+            <p>⏱️ <strong>Tempo estimado:</strong></p>
+            <table>
+                <tr>
+                    <th>Hardware</th>
+                    <th>1 minuto de áudio</th>
+                    <th>10 minutos de áudio</th>
+                </tr>
+                <tr>
+                    <td>GPU RTX 3060</td>
+                    <td>~30 segundos</td>
+                    <td>~5 minutos</td>
+                </tr>
+                <tr>
+                    <td>GPU GTX 1060</td>
+                    <td>~1 minuto</td>
+                    <td>~10 minutos</td>
+                </tr>
+                <tr>
+                    <td>CPU (sem GPU)</td>
+                    <td>~5 minutos</td>
+                    <td>~50 minutos</td>
+                </tr>
+            </table>
+
+            <h3>Passo 5.8: Revisar Resultados</h3>
+            <p>Após o processamento, você verá:</p>
+
+            <h4>Tabela de Falantes Detectados</h4>
+            <pre><code>┌─────────────┬──────────────────┬────────────┐
+│ ID Original │ Nome Proposto    │ Confiança  │
+├─────────────┼──────────────────┼────────────┤
+│ SPEAKER_00  │ [editar...]      │ --         │
+│ SPEAKER_01  │ [editar...]      │ 87%        │
+└─────────────┴──────────────────┴────────────┘</code></pre>
+
+            <p><strong>O que fazer:</strong></p>
+            <ol>
+                <li>Nos campos <code>[editar...]</code>, digite os nomes reais:
+                    <ul>
+                        <li><code>SPEAKER_00</code> → <code>Cliente</code></li>
+                        <li><code>SPEAKER_01</code> → <code>Atendente Empresa XYZ</code></li>
+                    </ul>
+                </li>
+                <li>Se a identificação automática estiver errada, corrija manualmente</li>
+            </ol>
+
+            <h4>Prévia da Transcrição</h4>
+            <p>Você verá algo como:</p>
+            <pre><code>[00:00.000] SPEAKER_00:
+  Olá, bom dia! Gostaria de falar sobre minha fatura.
+
+[00:05.230] SPEAKER_01:
+  Bom dia! Em que posso ajudar?
+
+[00:08.450] SPEAKER_00:
+  Houve uma cobrança indevida no valor de R$ 150,00.</code></pre>
+
+            <p><strong>Revise e corrija se necessário:</strong></p>
+            <ul>
+                <li>Erros de transcrição são possíveis em áudios ruins</li>
+                <li>Nomes próprios e termos técnicos podem precisar de ajuste</li>
+                <li>Trechos com ruído podem estar marcados como <code>[inaudível]</code></li>
+            </ul>
+        </section>
+
+        <!-- Seção 6 -->
+        <div class="page-break"></div>
+        <section id="interpretando-resultados">
+            <h2>6. Interpretando os Resultados</h2>
+            <p>Entenda o que cada informação significa:</p>
+
+            <h3>6.1. Timestamps</h3>
+            <p><strong>Formato:</strong> <code>[MM:SS.mmm]</code></p>
+            <p><strong>Exemplos:</strong></p>
+            <ul>
+                <li><code>[00:00.000]</code> = Início do áudio</li>
+                <li><code>[01:30.500]</code> = 1 minuto, 30 segundos e 500 milissegundos</li>
+                <li><code>[15:00.000]</code> = 15 minutos exatos</li>
+            </ul>
+            <p><strong>Precisão:</strong> Os timestamps são precisos até ~20ms (alinhamento fonético).</p>
+
+            <h3>6.2. IDs de Falante</h3>
+            <ul>
+                <li><code>SPEAKER_00</code>, <code>SPEAKER_01</code>, etc. são identificadores temporários</li>
+                <li>A numeração é arbitrária - <code>SPEAKER_00</code> não é necessariamente "o primeiro a falar"</li>
+                <li>Após mapeamento, use os nomes reais nos relatórios</li>
+            </ul>
+
+            <h3>6.3. Scores de Confiança</h3>
+            <table>
+                <tr>
+                    <th>Valor</th>
+                    <th>Interpretação</th>
+                    <th>Ação Recomendada</th>
+                </tr>
+                <tr>
+                    <td>0.90+</td>
+                    <td>Muito alta</td>
+                    <td>Pode confiar automaticamente</td>
+                </tr>
+                <tr>
+                    <td>0.75-0.90</td>
+                    <td>Alta</td>
+                    <td>Confiável, mas revise</td>
+                </tr>
+                <tr>
+                    <td>0.60-0.75</td>
+                    <td>Média</td>
+                    <td>Revise manualmente</td>
+                </tr>
+                <tr>
+                    <td>&lt;0.60</td>
+                    <td>Baixa</td>
+                    <td>Ignore e identifique manualmente</td>
+                </tr>
+            </table>
+
+            <h3>6.4. Marcas Especiais na Transcrição</h3>
+            <ul>
+                <li><code>[inaudível]</code> - Trecho não foi possível entender</li>
+                <li><code>[música]</code> - Detecção de música de fundo</li>
+                <li><code>[risos]</code> - Detecção de risadas</li>
+                <li><code>[pausa longa]</code> - Silêncio prolongado (&gt;3 segundos)</li>
+                <li><code>&lt;palavra&gt;</code> - Palavra com baixa confiança</li>
+            </ul>
+        </section>
+
+        <!-- Seção 7 -->
+        <section id="gerando-relatorios">
+            <h2>7. Gerando Relatórios Forenses</h2>
+
+            <h3>Passo 7.1: Clicar em Gerar Relatório</h3>
+            <p>Após revisar e mapear todos os falantes:</p>
+            <ol>
+                <li>Clique em <strong>"📄 Gerar Relatório Forense"</strong></li>
+                <li>Selecione os formatos desejados:
+                    <ul>
+                        <li>☑️ Markdown (.md)</li>
+                        <li>☑️ Texto (.txt)</li>
+                        <li>☑️ HTML (.html)</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h3>Passo 7.2: Aguardar Geração</h3>
+            <p>O sistema irá:</p>
+            <ol>
+                <li>Calcular hash SHA-256 do áudio original</li>
+                <li>Compilar metadados de processamento</li>
+                <li>Formatar transcrição nos formatos selecionados</li>
+                <li>Salvar arquivos na pasta <code>output/</code></li>
+            </ol>
+
+            <h3>Passo 7.3: Localizar Arquivos Gerados</h3>
+            <p>Os arquivos serão salvos em:</p>
+            <pre><code>transcritor-forense/
+└── output/
+    ├── meu_audio_transcription.md
+    ├── meu_audio_transcription.txt
+    └── meu_audio_transcription.html</code></pre>
+
+            <h3>Passo 7.4: Usar em Processos Judiciais</h3>
+            
+            <h4>Para anexar em processo eletrônico:</h4>
+            <ol>
+                <li>Converta o HTML para PDF:
+                    <ul>
+                        <li>Abra o arquivo <code>.html</code> no navegador</li>
+                        <li>Imprima (Ctrl+P)</li>
+                        <li>Selecione "Salvar como PDF"</li>
+                        <li>Salve como <code>laudo_transcricao.pdf</code></li>
+                    </ul>
+                </li>
+                <li>Anexe no processo:
+                    <ul>
+                        <li>PDF do relatório</li>
+                        <li>Áudio original (para conferência do hash)</li>
+                        <li>Este manual (como anexo técnico)</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h4>Para validar integridade:</h4>
+            <p>Qualquer pessoa pode verificar que o áudio não foi alterado:</p>
+            <pre><code># No terminal, na pasta do áudio
+sha256sum negociacao.wav
+
+# Compare com o hash no relatório
+# Devem ser IDÊNTICOS</code></pre>
+        </section>
+
+        <!-- Seção 8 -->
+        <div class="page-break"></div>
+        <section id="perguntas-frequentes">
+            <h2>8. Perguntas Frequentes</h2>
+
+            <h3>❓ Quanto tempo leva para processar?</h3>
+            <p>Depende do hardware e duração do áudio:</p>
+            <table>
+                <tr>
+                    <th>Duração</th>
+                    <th>GPU (RTX 3060)</th>
+                    <th>CPU (i7)</th>
+                </tr>
+                <tr>
+                    <td>1 minuto</td>
+                    <td>30-60 seg</td>
+                    <td>5-10 min</td>
+                </tr>
+                <tr>
+                    <td>10 minutos</td>
+                    <td>5-10 min</td>
+                    <td>50-100 min</td>
+                </tr>
+                <tr>
+                    <td>30 minutos</td>
+                    <td>15-30 min</td>
+                    <td>150-300 min</td>
+                </tr>
+            </table>
+            <p><strong>Dica:</strong> Para áudios longos, considere dividir em partes.</p>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #bdc3c7;">
+
+            <h3>❓ A transcrição ficou com erros. O que fazer?</h3>
+            <p><strong>Causas possíveis:</strong></p>
+            <ol>
+                <li><strong>Áudio com ruído:</strong> Use filtro de ruído antes (Audacity, Adobe Audition)</li>
+                <li><strong>Qualidade baixa:</strong> MP3 128kbps ou inferior perde informação</li>
+                <li><strong>Sotaque forte:</strong> Revise manualmente trechos problemáticos</li>
+                <li><strong>Termos técnicos:</strong> Adicione ao dicionário ou corrija pós-processamento</li>
+            </ol>
+            <p><strong>Solução:</strong> Sempre revise a transcrição antes de usar juridicamente.</p>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #bdc3c7;">
+
+            <h3>❓ Não tenho amostras de voz. Posso usar mesmo assim?</h3>
+            <p><strong>Sim!</strong> As amostras são opcionais.</p>
+            <p>Sem amostras:</p>
+            <ul>
+                <li>A diarização ainda identifica QUANTOS falantes existem</li>
+                <li>Você mapeia manualmente baseado no conteúdo</li>
+                <li>Exemplo: quem fala "quero cancelar" provavelmente é o cliente</li>
+            </ul>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #bdc3c7;">
+
+            <h3>❓ Como divido um áudio longo?</h3>
+            <p>Use o <strong>Audacity</strong> (gratuito):</p>
+            <ol>
+                <li>Abra o áudio no Audacity</li>
+                <li>Selecione o trecho desejado</li>
+                <li>Arquivo → Exportar → Exportar seleção</li>
+                <li>Salve como <code>parte1.wav</code>, <code>parte2.wav</code>, etc.</li>
+                <li>Processe cada parte separadamente</li>
+            </ol>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #bdc3c7;">
+
+            <h3>❓ Posso usar em lotes (vários áudios)?</h3>
+            <p>Atualmente a interface web processa <strong>um áudio por vez</strong>.</p>
+            <p>Para processamento em lote, use o modo programático (veja seção "Método 2" no README.md).</p>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #bdc3c7;">
+
+            <h3>❓ O token do Hugging Face expira?</h3>
+            <p><strong>Não</strong>, tokens do tipo "Read" não expiram.</p>
+            <p>Mas você pode:</p>
+            <ul>
+                <li>Revogar tokens em https://huggingface.co/settings/tokens</li>
+                <li>Gerar novos tokens a qualquer momento</li>
+            </ul>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #bdc3c7;">
+
+            <h3>❓ Funciona sem internet?</h3>
+            <p><strong>Após a instalação inicial, SIM.</strong></p>
+            <p>Uma vez baixados os modelos (primeira execução), a ferramenta funciona 100% offline.</p>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #bdc3c7;">
+
+            <h3>❓ Onde ficam os modelos baixados?</h3>
+            <p>Por padrão em:</p>
+            <ul>
+                <li><strong>Linux/macOS:</strong> <code>~/.cache/huggingface/hub/</code></li>
+                <li><strong>Windows:</strong> <code>C:\Users\&lt;Voce&gt;\.cache\huggingface\hub\</code></li>
+            </ul>
+            <p>São aproximadamente 5-10 GB de modelos.</p>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #bdc3c7;">
+
+            <h3>❓ Posso compartilhar os relatórios?</h3>
+            <p><strong>Sim</strong>, mas:</p>
+            <ol>
+                <li>Mantenha o hash SHA-256 visível (integridade)</li>
+                <li>Inclua metadados de processamento</li>
+                <li>Informe a versão da ferramenta usada</li>
+            </ol>
+        </section>
+
+        <!-- Seção Suporte -->
+        <section id="suporte">
+            <h2>🆘 Preciso de Ajuda!</h2>
+
+            <h3>Erro Comum: "Token inválido"</h3>
+            <p><strong>Sintoma:</strong> Mensagem de erro mencionando "401 Unauthorized" ou "token invalid"</p>
+            <p><strong>Solução:</strong></p>
+            <ol>
+                <li>Verifique se aceitou os termos em AMBOS os links:
+                    <ul>
+                        <li>https://huggingface.co/pyannote/speaker-diarization-3.1</li>
+                        <li>https://huggingface.co/pyannote/segmentation-3.0</li>
+                    </ul>
+                </li>
+                <li>Gere um NOVO token em https://huggingface.co/settings/tokens</li>
+                <li>Atualize o <code>config.yaml</code> com o novo token</li>
+                <li>Reinicie a aplicação</li>
+            </ol>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #bdc3c7;">
+
+            <h3>Erro Comum: "CUDA out of memory"</h3>
+            <p><strong>Sintoma:</strong> Erro durante processamento mencionando "OOM" ou "out of memory"</p>
+            <p><strong>Solução:</strong></p>
+            <ol>
+                <li>Use modelo menor no <code>config.yaml</code>:
+                    <pre><code>transcription_model: "small"  # em vez de "large-v2"</code></pre>
+                </li>
+                <li>Feche outros programas usando GPU</li>
+                <li>Se não tiver GPU, force uso de CPU:
+                    <pre><code>device: "cpu"</code></pre>
+                </li>
+            </ol>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #bdc3c7;">
+
+            <h3>Erro Comum: "ModuleNotFoundError"</h3>
+            <p><strong>Sintoma:</strong> <code>ModuleNotFoundError: No module named 'pyannote'</code></p>
+            <p><strong>Solução:</strong></p>
+            <ol>
+                <li>Verifique se o ambiente virtual está ativo (deve ter <code>(venv)</code> no prompt)</li>
+                <li>Reinstale as dependências:
+                    <pre><code>pip install -r requirements.txt --force-reinstall</code></pre>
+                </li>
+            </ol>
+
+            <div class="info-box" style="margin-top: 30px;">
+                <h3>📞 Contato e Suporte</h3>
+                <p>Se nenhum destes passos resolver seu problema:</p>
+                <ol>
+                    <li><strong>Verifique os logs</strong> - A aplicação mostra mensagens de erro detalhadas</li>
+                    <li><strong>Consulte o README.md</strong> - Informações técnicas adicionais</li>
+                    <li><strong>Abra uma issue</strong> - No repositório GitHub do projeto</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Rodapé -->
+        <footer>
+            <p><strong>Última atualização:</strong> Janeiro 2024</p>
+            <p><strong>Versão do manual:</strong> 1.0.0</p>
+            <p style="margin-top: 20px;"><em>Desenvolvido para profissionais do direito que necessitam de precisão técnica em provas audiovisuais.</em></p>
+        </footer>
+    </div>
+</body>
+</html>
