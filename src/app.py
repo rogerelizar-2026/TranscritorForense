@@ -581,7 +581,14 @@ class ForensicTranscriber:
     def launch(self, server_name: str = "0.0.0.0", server_port: int = 7860, share: bool = False, **kwargs):
         """Lança aplicação."""
         app = self.create_interface()
-        app.launch(server_name=server_name, server_port=server_port, share=share, **kwargs)
+        try:
+            app.launch(server_name=server_name, server_port=server_port, share=share, **kwargs)
+        except ValueError as e:
+            if "localhost is not accessible" in str(e):
+                print("Aviso: localhost não acessível. Ativando share=True...")
+                app.launch(server_name=server_name, server_port=server_port, share=True, **kwargs)
+            else:
+                raise
 
 
 def main():
