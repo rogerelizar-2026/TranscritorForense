@@ -1,0 +1,226 @@
+#!/bin/bash
+# =============================================================================
+# INSTALADOR AUTOMÁTICO - TRANSCRITOR FORENSE DE ÁUDIO
+# =============================================================================
+# Este script automatiza toda a instalação do sistema, deixando-o pronto para uso.
+# Compatível com Linux e macOS
+# =============================================================================
+
+set -e  # Sai em caso de erro
+
+# Cores para output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Funções de log
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}[SUCESSO]${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[ATENÇÃO]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERRO]${NC} $1"
+}
+
+# Cabeçalho
+echo ""
+echo "============================================================================="
+echo "  ⚖️  INSTALADOR AUTOMÁTICO - TRANSCRITOR FORENSE DE ÁUDIO"
+echo "============================================================================="
+echo ""
+log_info "Este instalador configurará todo o ambiente necessário para uso do sistema."
+echo ""
+
+# Verificar se está na pasta correta
+if [ ! -f "requirements.txt" ] || [ ! -f "config.yaml" ]; then
+    log_error "Execute este script no diretório raiz do projeto (onde estão requirements.txt e config.yaml)"
+    exit 1
+fi
+
+# Passo 1: Verificar Python
+log_info "Passo 1/8: Verificando Python..."
+if command -v python3 &> /dev/null; then
+    PYTHON_CMD="python3"
+elif command -v python &> /dev/null; then
+    PYTHON_CMD="python"
+else
+    log_error "Python não encontrado. Instale Python 3.10 ou superior."
+    exit 1
+fi
+
+PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | awk '{print $2}')
+log_info "Python encontrado: $PYTHON_VERSION"
+
+# Verificar versão mínima (3.10)
+PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
+PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
+
+if [ "$PYTHON_MAJOR" -lt 3 ] || ([ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 10 ]); then
+    log_error "Python 3.10 ou superior é necessário. Versão atual: $PYTHON_VERSION"
+    exit 1
+fi
+
+log_success "Python OK ✓"
+echo ""
+
+# Passo 2: Verificar Git
+log_info "Passo 2/8: Verificando Git..."
+if command -v git &> /dev/null; then
+    GIT_VERSION=$(git --version)
+    log_info "$GIT_VERSION"
+    log_success "Git OK ✓"
+else
+    log_warning "Git não encontrado. Algumas funcionalidades podem não estar disponíveis."
+fi
+echo ""
+
+# Passo 3: Criar ambiente virtual
+log_info "Passo 3/8: Criando ambiente virtual..."
+if [ -d "venv" ]; then
+    log_warning "Ambiente virtual já existe. Removendo..."
+    rm -rf venv
+fi
+
+$PYTHON_CMD -m venv venv
+log_success "Ambiente virtual criado ✓"
+echo ""
+
+# Passo 4: Ativar ambiente virtual e atualizar pip
+log_info "Passo 4/8: Ativando ambiente e atualizando pip..."
+source venv/bin/activate
+pip install --upgrade pip --quiet
+log_success "Pip atualizado ✓"
+echo ""
+
+# Passo 5: Instalar dependências do sistema (Linux apenas)
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    log_info "Passo 5/8: Instalando dependências do sistema (Linux)..."
+    
+    if command -v apt-get &> /dev/null; then
+        log_info "Detectado Debian/Ubuntu. Instalando pacotes..."
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq ffmpeg libsndfile1 portaudio19-dev
+        log_success "Dependências do sistema instaladas ✓"
+    elif command -v dnf &> /dev/null; then
+        log_info "Detectado Fedora/RHEL. Instalando pacotes..."
+        sudo dnf install -y -q ffmpeg libsndfile portaudio-devel
+        log_success "Dependências do sistema instaladas ✓"
+    elif command -v pacman &> /dev/null; then
+        log_info "Detectado Arch Linux. Instalando pacotes..."
+        sudo pacman -S --noconfirm --quiet ffmpeg libsndfile portaudio
+        log_success "Dependências do sistema instaladas ✓"
+    else
+        log_warning "Gerenciador de pacotes não detectado. Pode ser necessário instalar dependências manualmente."
+    fi
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    log_info "Passo 5/8: Verificando dependências do sistema (macOS)..."
+    if command -v brew &> /dev/null; then
+        log_info "Homebrew detectado. Verificando ffmpeg..."
+        if brew list ffmpeg &> /dev/null; then
+            log_info "ffmpeg já instalado"
+        else
+            log_info "Instalando ffmpeg..."
+            brew install ffmpeg
+        fi
+        log_success "Dependências do sistema verificadas ✓"
+    else
+        log_warning "Homebrew não encontrado. Recomenda-se instalar: https://brew.sh"
+    fi
+else
+    log_info "Passo 5/8: Pulando dependências do sistema (SO não identificado como Linux/macOS)"
+fi
+echo ""
+
+# Passo 6: Instalar dependências Python
+log_info "Passo 6/8: Instalando dependências Python (pode demorar 5-15 minutos)..."
+pip install -r requirements.txt
+log_success "Dependências Python instaladas ✓"
+echo ""
+
+# Passo 7: Criar diretórios necessários
+log_info "Passo 7/8: Criando estrutura de diretórios..."
+mkdir -p output samples models templates
+log_success "Diretórios criados ✓"
+echo ""
+
+# Passo 8: Configurar token Hugging Face
+log_info "Passo 8/8: Configurando token Hugging Face..."
+echo ""
+echo "============================================================================="
+echo "  CONFIGURAÇÃO DO HUGGING FACE"
+echo "============================================================================="
+echo ""
+log_info "Os modelos pyannote.audio exigem um token do Hugging Face (gratuito)."
+echo ""
+log_info "Siga estas instruções:"
+echo "  1. Acesse: https://huggingface.co/join (crie conta se não tiver)"
+echo "  2. Aceite os termos dos modelos:"
+echo "     - https://huggingface.co/pyannote/speaker-diarization-3.1"
+echo "     - https://huggingface.co/pyannote/segmentation-3.0"
+echo "  3. Gere um token em: https://huggingface.co/settings/tokens"
+echo "  4. Copie o token (começa com 'hf_')"
+echo ""
+
+read -p "Cole seu token do Hugging Face aqui: " HF_TOKEN
+
+if [ -z "$HF_TOKEN" ]; then
+    log_warning "Token não fornecido. O sistema não funcionará sem ele."
+    log_info "Você pode configurar manualmente depois editando config.yaml"
+else
+    # Atualizar config.yaml com o token
+    sed -i.bak "s/huggingface_token: \"hf_seu_token_aqui\"/huggingface_token: \"$HF_TOKEN\"/" config.yaml
+    rm -f config.yaml.bak
+    log_success "Token configurado em config.yaml ✓"
+fi
+echo ""
+
+# Resumo final
+echo "============================================================================="
+echo "  INSTALAÇÃO CONCLUÍDA!"
+echo "============================================================================="
+echo ""
+log_success "O sistema está pronto para uso!"
+echo ""
+echo "Próximos passos:"
+echo "  1. Ative o ambiente virtual:"
+echo "     source venv/bin/activate"
+echo ""
+echo "  2. Execute a aplicação:"
+echo "     python -m src.app"
+echo ""
+echo "  3. Acesse no navegador: http://localhost:7860"
+echo ""
+echo "Ou execute o script de inicialização rápida:"
+echo "  ./iniciar.sh"
+echo ""
+echo "============================================================================="
+echo ""
+
+# Criar script de inicialização
+cat > iniciar.sh << 'EOF'
+#!/bin/bash
+# Script de inicialização rápida
+
+if [ ! -d "venv" ]; then
+    echo "Erro: Ambiente virtual não encontrado. Execute install.sh primeiro."
+    exit 1
+fi
+
+source venv/bin/activate
+python -m src.app
+EOF
+
+chmod +x iniciar.sh
+log_success "Script de inicialização criado: iniciar.sh"
+
+echo ""
