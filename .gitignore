@@ -1,1 +1,1 @@
-Nothing should be ignored based on the provided file changes, as they consist only of source files (.bat, .sh, .txt, .py) and a markdown document. No build artifacts, dependencies, or temporary files are present in the change list.
+Nothing should be ignored based on the provided file changes, as they consist only of source/config files (.md, .bat, .sh, .txt) without any build artifacts, dependencies, or temporary files.

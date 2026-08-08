@@ -104,6 +104,17 @@ if errorlevel 1 (
 echo [SUCESSO] PyTorch instalado
 echo.
 
+REM Passo 5.5: Instalar huggingface_hub com versão compatível
+echo [PASSO 5.5/8] Instalando Hugging Face Hub...
+pip install "huggingface_hub>=0.20.0,<0.26.0" --quiet
+if errorlevel 1 (
+    echo [ERRO] Falha ao instalar huggingface_hub
+    pause
+    exit /b 1
+)
+echo [SUCESSO] Hugging Face Hub instalado
+echo.
+
 REM Passo 6: Instalar demais dependências Python
 echo [PASSO 6/8] Instalando dependencias Python (pode demorar 5-15 minutos)...
 pip install -r requirements.txt
