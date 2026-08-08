@@ -57,9 +57,14 @@ class ForensicTranscriber:
             token = self.config.get("huggingface_token", "")
             model = self.config.get("diarization_model", "pyannote/speaker-diarization-3.1")
             device = "cuda" if torch.cuda.is_available() else "cpu"
-            self.diarizer_pipeline = Pipeline.from_pretrained(model, use_auth_token=token)
+            
+            # Usa token (parâmetro correto para versões recentes do pyannote)
+            if token:
+                self.diarizer_pipeline = Pipeline.from_pretrained(model, token=token)
+            else:
+                self.diarizer_pipeline = Pipeline.from_pretrained(model)
+            
             self.diarizer_pipeline.to(torch.device(device))
-    
     def diarize(self, audio_path: str, min_speakers: int = 2, max_speakers: int = 5) -> List[Dict]:
         """Realiza diarização do áudio."""
         self._load_diarizer()

@@ -1,11 +1,40 @@
-pyannote.audio==3.1.1
-whisperx==3.1.1
-speechbrain==1.0.0
-torch==2.1.0
-torchaudio==2.1.0
-gradio==4.31.0
-jinja2==3.1.3
-pyyaml==6.0.1
-numpy<2.0.0
-soundfile==0.12.1
-librosa==0.10.1
+# =============================================================================
+# REQUISITOS DEPENDÊNCIAS - TRANSCRITOR FORENSE DE ÁUDIO
+# =============================================================================
+# Versões atualizadas e testadas para compatibilidade com Python 3.10-3.12
+# =============================================================================
+
+# Framework principal de áudio e deep learning
+# torch e torchaudio devem ter a mesma versão majoritária
+torch>=2.3.0,<2.8.0
+torchaudio>=2.3.0,<2.8.0
+
+# Diarização de falantes
+pyannote.audio>=3.3.0,<4.1.0
+
+# Transcrição com alinhamento fonético
+# Nota: whisperx é instalado via pip com dependências específicas
+whisperx>=3.3.0,<3.9.0
+
+# Embeddings de voz para identificação
+speechbrain>=1.0.0,<1.2.0
+
+# Interface web
+gradio>=4.31.0,<6.0.0
+
+# Processamento de áudio
+librosa>=0.10.1,<0.12.0
+soundfile>=0.12.1,<0.15.0
+
+# Utilitários
+jinja2>=3.1.3,<4.0.0
+pyyaml>=6.0.1,<7.0.0
+
+# NumPy - compatível com todas as bibliotecas acima
+# Versão 2.x é suportada pelas bibliotecas modernas
+numpy>=1.24.0,<3.0.0
+
+# Dependências adicionais implícitas (instaladas automaticamente)
+# - transformers (via pyannote/speechbrain)
+# - huggingface-hub (via pyannote/speechbrain)
+# - ffmpeg-python (requer ffmpeg no sistema)

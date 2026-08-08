@@ -4,11 +4,13 @@ REM INSTALADOR AUTOMÁTICO - TRANSCRITOR FORENSE DE ÁUDIO (Windows)
 REM =============================================================================
 REM Este script automatiza toda a instalação do sistema, deixando-o pronto para uso.
 REM Compatível com Windows 10/11
+REM Versão: 2.0.0 (Corrigida e Otimizada)
 REM =============================================================================
 
 echo.
 echo =============================================================================
-echo   ^|^|  INSTALADOR AUTOMÁTICO - TRANSCRITOR FORENSE DE ÁUDIO
+echo   ||  INSTALADOR AUTOMATICO - TRANSCRITOR FORENSE DE AUDIO
+echo       Versao 2.0.0 - Compativel com Python 3.10 a 3.12
 echo =============================================================================
 echo.
 echo [INFO] Este instalador configurara todo o ambiente necessario para uso do sistema.
@@ -28,11 +30,12 @@ if not exist "config.yaml" (
 )
 
 REM Passo 1: Verificar Python
-echo [INFO] Passo 1/7: Verificando Python...
+echo [PASSO 1/8] Verificando Python...
 python --version >nul 2>&1
 if errorlevel 1 (
     echo [ERRO] Python nao encontrado. Instale Python 3.10 ou superior.
     echo [INFO] Baixe em: https://www.python.org/downloads/
+    echo [INFO] Marque a opcao 'Add Python to PATH' durante a instalacao.
     pause
     exit /b 1
 )
@@ -42,7 +45,7 @@ echo [SUCESSO] Python OK
 echo.
 
 REM Passo 2: Criar ambiente virtual
-echo [INFO] Passo 2/7: Criando ambiente virtual...
+echo [PASSO 2/8] Criando ambiente virtual...
 if exist "venv" (
     echo [ATENCAO] Ambiente virtual ja existe. Removendo...
     rmdir /s /q venv
@@ -58,43 +61,63 @@ echo [SUCESSO] Ambiente virtual criado
 echo.
 
 REM Passo 3: Ativar ambiente virtual e atualizar pip
-echo [INFO] Passo 3/7: Ativando ambiente e atualizando pip...
+echo [PASSO 3/8] Ativando ambiente e atualizando pip...
 call venv\Scripts\activate.bat
-python -m pip install --upgrade pip --quiet
-echo [SUCESSO] Pip atualizado
+python -m pip install --upgrade pip setuptools wheel --quiet
+echo [SUCESSO] Pip e ferramentas atualizados
 echo.
 
 REM Passo 4: Instalar dependências do sistema (FFmpeg)
-echo [INFO] Passo 4/7: Verificando FFmpeg...
+echo [PASSO 4/8] Verificando FFmpeg...
 where ffmpeg >nul 2>&1
 if errorlevel 1 (
     echo [ATENCAO] FFmpeg nao encontrado. Instalacao recomendada.
+    echo.
     echo [INFO] Para instalar FFmpeg no Windows:
     echo   1. Baixe de: https://www.gyan.dev/ffmpeg/builds/
-    echo   2. Extraia e adicione ao PATH do sistema
+    echo   2. Extraia o arquivo ZIP
+    echo   3. Copie a pasta 'bin' para C:\ffmpeg\bin
+    echo   4. Adicione C:\ffmpeg\bin ao PATH do sistema
+    echo      - Painel de Controle ^> Sistema ^> Configuracoes avancas ^> Variaveis de Ambiente
+    echo      - Edite a variavel 'Path' e adicione o caminho
     echo.
-    set /p INSTALL_FFMPEG="Deseja pular esta etapa? (S/N): "
+    set /p INSTALL_FFMPEG="Deseja pular esta etapa e continuar mesmo assim? (S/N): "
     if /i "%INSTALL_FFMPEG%"=="N" (
         echo [INFO] Consulte o manual para instrucoes de instalacao do FFmpeg
+        pause
+        exit /b 1
     )
+    echo [INFO] Continuando sem FFmpeg. Algumas funcionalidades podem nao funcionar.
 ) else (
     echo [SUCESSO] FFmpeg ja instalado
 )
 echo.
 
-REM Passo 5: Instalar dependências Python
-echo [INFO] Passo 5/7: Instalando dependencias Python (pode demorar 5-15 minutos)...
+REM Passo 5: Instalar PyTorch primeiro
+echo [PASSO 5/8] Instalando PyTorch (biblioteca principal)...
+pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu --quiet
+if errorlevel 1 (
+    echo [ERRO] Falha ao instalar PyTorch
+    pause
+    exit /b 1
+)
+echo [SUCESSO] PyTorch instalado
+echo.
+
+REM Passo 6: Instalar demais dependências Python
+echo [PASSO 6/8] Instalando dependencias Python (pode demorar 5-15 minutos)...
 pip install -r requirements.txt
 if errorlevel 1 (
     echo [ERRO] Falha ao instalar dependencias
+    echo [INFO] Tente executar: pip install --upgrade pip
     pause
     exit /b 1
 )
 echo [SUCESSO] Dependencias Python instaladas
 echo.
 
-REM Passo 6: Criar diretórios necessários
-echo [INFO] Passo 6/7: Criando estrutura de diretorios...
+REM Passo 7: Criar diretórios necessários
+echo [PASSO 7/8] Criando estrutura de diretorios...
 if not exist "output" mkdir output
 if not exist "samples" mkdir samples
 if not exist "models" mkdir models
@@ -102,8 +125,8 @@ if not exist "templates" mkdir templates
 echo [SUCESSO] Diretorios criados
 echo.
 
-REM Passo 7: Configurar token Hugging Face
-echo [INFO] Passo 7/7: Configurando token Hugging Face...
+REM Passo 8: Configurar token Hugging Face
+echo [PASSO 8/8] Configurando token Hugging Face...
 echo.
 echo =============================================================================
 echo   CONFIGURACAO DO HUGGING FACE
