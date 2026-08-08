@@ -1,3 +1,24 @@
-Nothing should be ignored in this case, as the only change is adding a markdown documentation file (.md) which is a source/config file. No build artifacts, dependencies, or temporary files are present in the changes.
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-Output: (empty - no content)
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Dependencies
+.venv/
+venv/
+```
