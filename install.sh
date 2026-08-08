@@ -158,6 +158,9 @@ log_step "6/8: Instalando dependências Python (pode demorar 5-15 minutos)..."
 log_info "Instalando PyTorch primeiro (biblioteca principal)..."
 pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu --quiet
 
+log_info "Instalando Hugging Face Hub com versão compatível..."
+pip install "huggingface_hub>=0.20.0,<0.26.0" --quiet
+
 log_info "Instalando demais dependências..."
 pip install -r requirements.txt --quiet
 
