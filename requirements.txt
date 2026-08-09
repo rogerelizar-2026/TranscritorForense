@@ -20,11 +20,11 @@ whisperx>=3.3.0,<3.9.0
 speechbrain>=1.0.0,<1.2.0
 
 # Interface web
-gradio>=4.31.0,<6.0.0
+gradio>=5.0.0,<7.0.0
 
 # Hugging Face - necessário para pyannote, speechbrain e gradio
 # Versão compatível com HfFolder (necessário para gradio < 5.0)
-huggingface_hub>=0.20.0,<0.26.0
+huggingface_hub>=0.26.0,<1.0.0
 
 # Processamento de áudio
 librosa>=0.10.1,<0.12.0
