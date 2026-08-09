@@ -23,7 +23,7 @@ speechbrain>=1.0.0,<1.2.0
 gradio>=5.0.0,<7.0.0
 
 # Hugging Face - necessário para pyannote, speechbrain e gradio
-# Versão compatível com HfFolder (necessário para gradio < 5.0)
+# Versão compatível com gradio 6.x (não requer HfFolder)
 huggingface_hub>=0.26.0,<1.0.0
 
 # Processamento de áudio
