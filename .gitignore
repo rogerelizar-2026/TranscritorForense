@@ -1,17 +1,19 @@
-```
-# Compiled Python files
+```gitignore
+# Compiled and build artifacts
 *.pyc
 __pycache__/
 
 # Dependencies
 .venv/
 venv/
-node_modules/
+pip-log.txt
+pip-selfcheck.json
 
 # Logs and temp files
 *.log
 *.tmp
 *.swp
+*.swo
 
 # Environment
 .env
@@ -21,4 +23,42 @@ node_modules/
 # Editors
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+*.coveragerc
+
+# Python specific
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.egg
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
+
+# Distribution / packaging
+dist/
+build/
+*.egg
+*.egg-info
+.svn/
+ CVS/
 ```

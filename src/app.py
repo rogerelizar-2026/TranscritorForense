@@ -54,13 +54,18 @@ class ForensicTranscriber:
         """Carrega pipeline de diarização."""
         if self.diarizer_pipeline is None:
             from pyannote.audio import Pipeline
+            from huggingface_hub import login
             token = self.config.get("huggingface_token", "")
             model = self.config.get("diarization_model", "pyannote/speaker-diarization-3.1")
             device = "cuda" if torch.cuda.is_available() else "cpu"
             
-            # Usa token (parâmetro correto para versões recentes do pyannote)
+            # Faz login com o token antes de carregar o pipeline
             if token:
-                self.diarizer_pipeline = Pipeline.from_pretrained(model, token=token)
+                try:
+                    login(token=token)
+                except Exception as e:
+                    print(f"Aviso: Não foi possível fazer login no Hugging Face: {e}")
+                self.diarizer_pipeline = Pipeline.from_pretrained(model)
             else:
                 self.diarizer_pipeline = Pipeline.from_pretrained(model)
             
@@ -541,6 +546,9 @@ class ForensicTranscriber:
                 fn=lambda *args: self._load_samples_handler([(n.value, f.value) for n, f in sample_inputs if n.value and f.value]),
                 inputs=[item for pair in sample_inputs for item in pair],
                 outputs=sample_status
+            ).then(
+                fn=lambda: "✅ Amostras carregadas com sucesso!",
+                outputs=map_status
             )
             
             process_btn.click(
