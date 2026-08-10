@@ -4,7 +4,6 @@ Integra diarização, transcrição, identificação e formatação em uma solu�
 """
 
 import os
-import hashlib
 import torch
 import torchaudio
 import yaml
@@ -241,21 +240,12 @@ class ForensicTranscriber:
             return f"{hours:02d}:{minutes:02d}:{int(secs):02d}.{millis:03d}"
         return f"{minutes:02d}:{int(secs):02d}.{millis:03d}"
     
-    def compute_file_hash(self, file_path: str, algorithm: str = "sha256") -> str:
-        """Calcula hash do arquivo."""
-        hash_func = getattr(hashlib, algorithm)()
-        with open(file_path, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash_func.update(chunk)
-        return hash_func.hexdigest()
-    
     def generate_markdown(self, segments: List[Dict], metadata: Dict, speaker_map: Dict[str, str]) -> str:
         """Gera relatório Markdown."""
         lines = [
             "# RELATÓRIO DE TRANSCRIÇÃO FORENSE\n",
             "## METADADOS TÉCNICOS\n",
             f"- **Arquivo:** {metadata['audio_file']}",
-            f"- **Hash SHA-256:** `{metadata['audio_hash_sha256']}`",
             f"- **Processamento:** {metadata['processing_date']}",
             f"- **Duração:** {self.format_timestamp(metadata['total_duration'])}",
             f"- **Segmentos:** {metadata['total_segments']}\n"
@@ -293,9 +283,6 @@ class ForensicTranscriber:
             "- **Identificação:** speechbrain"
         ])
         
-        content = "\n".join(lines)
-        content_hash = hashlib.sha256(content.encode()).hexdigest()
-        lines.extend(["\n### Hash do Conteúdo\n", f"`{content_hash}`"])
         return "\n".join(lines)
     
     def generate_txt(self, segments: List[Dict], metadata: Dict, speaker_map: Dict[str, str]) -> str:
@@ -305,7 +292,6 @@ class ForensicTranscriber:
             "RELATÓRIO DE TRANSCRIÇÃO FORENSE",
             "=" * 70,
             f"Arquivo: {metadata['audio_file']}",
-            f"Hash: {metadata['audio_hash_sha256']}",
             f"Processamento: {metadata['processing_date']}",
             "-" * 70,
             "TRANSCRIÇÃO",
@@ -339,7 +325,6 @@ class ForensicTranscriber:
         table { width: 100%; border-collapse: collapse; margin: 15px 0; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background: #3498db; color: white; }
-        .hash { font-family: monospace; background: #f4f4f4; padding: 2px 5px; }
     </style>
 </head>
 <body>
@@ -347,7 +332,6 @@ class ForensicTranscriber:
     <div class="metadata">
         <h2>METADADOS</h2>
         <p><strong>Arquivo:</strong> {{ metadata.audio_file }}</p>
-        <p><strong>Hash:</strong> <span class="hash">{{ metadata.audio_hash_sha256 }}</span></p>
         <p><strong>Data:</strong> {{ metadata.processing_date }}</p>
         <p><strong>Duração:</strong> {{ metadata.total_duration_formatted }}</p>
         {% if speaker_mappings %}
@@ -362,7 +346,7 @@ class ForensicTranscriber:
     {% for seg in segments %}
     <div class="segment"><span class="timestamp">[{{ seg.timestamp }}]</span> <span class="speaker">{{ seg.speaker }}:</span> {{ seg.text }}</div>
     {% endfor %}</div>
-    <div class="footer"><p>Transcritor Forense v1.0.0 | pyannote.audio • whisperx • speechbrain</p><p>Hash: <span class="hash">{{ content_hash }}</span></p></div>
+    <div class="footer"><p>Transcritor Forense v1.0.0 | pyannote.audio • whisperx • speechbrain</p></div>
 </body>
 </html>"""
         
@@ -378,9 +362,7 @@ class ForensicTranscriber:
         
         metadata["total_duration_formatted"] = self.format_timestamp(metadata.get("total_duration", 0))
         template = env.from_string(template_str)
-        html = template.render(segments=formatted_segs, metadata=metadata, speaker_mappings=metadata.get("speaker_mappings", []), content_hash="")
-        content_hash = hashlib.sha256(html.encode()).hexdigest()
-        return template.render(segments=formatted_segs, metadata=metadata, speaker_mappings=metadata.get("speaker_mappings", []), content_hash=content_hash)
+        return template.render(segments=formatted_segs, metadata=metadata, speaker_mappings=metadata.get("speaker_mappings", []))
     
     def generate_report(self, audio_path: str, segments: List[Dict], formats: List[str] = None) -> Dict[str, str]:
         """Gera relatório nos formatos especificados."""
@@ -394,7 +376,6 @@ class ForensicTranscriber:
         metadata = {
             "audio_file": os.path.basename(audio_path),
             "audio_path": os.path.abspath(audio_path),
-            "audio_hash_sha256": self.compute_file_hash(audio_path),
             "processing_date": datetime.now().isoformat(),
             "total_duration": max(seg.get("end", 0) for seg in segments) if segments else 0,
             "total_segments": len(segments),
