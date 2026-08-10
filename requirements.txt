@@ -17,13 +17,14 @@ pyannote.audio>=3.3.0,<4.1.0
 whisperx>=3.3.0,<3.9.0
 
 # Embeddings de voz para identificação
+# speechbrain >= 1.0.0 usa token em vez de use_auth_token
 speechbrain>=1.0.0,<1.2.0
 
 # Interface web
 gradio>=5.0.0,<7.0.0
 
 # Hugging Face - necessário para pyannote, speechbrain e gradio
-# Versão compatível com gradio 6.x (não requer HfFolder)
+# Versão >= 0.26.0 usa 'token' em vez de 'use_auth_token'
 huggingface_hub>=0.26.0,<1.0.0
 
 # Processamento de áudio
