@@ -1,175 +1,310 @@
 """
-Transcritor Forense de Áudio - Módulo Único Simplificado
-Integra diarização, transcrição, identificação e formatação em uma solução coesa.
+Transcritor Forense de Áudio - Versão 2.0 Otimizada
+Sistema profissional para transcrição com validade jurídica.
+Integra diarização, transcrição, identificação e relatórios forenses.
 """
 
 import os
+import sys
+import hashlib
+import json
 import torch
 import torchaudio
 import yaml
 import gradio as gr
 from datetime import datetime
 from typing import Dict, List, Any, Optional, Tuple
-from jinja2 import Environment, BaseLoader
+from jinja2 import Template
 import warnings
+import traceback
 
-warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore")
+
+# Configuração de dispositivo
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+COMPUTE_TYPE = "float16" if DEVICE == "cuda" else "float32"
 
 
 class ForensicTranscriber:
     """
-    Classe única que integra todos os componentes do transcritor forense.
+    Transcritor Forense - Sistema integrado para análise de áudio com validade jurídica.
     
-    Funcionalidades:
-    - Diarização acústica (pyannote.audio)
-    - Transcrição precisa (whisperx)
-    - Identificação por amostras (speechbrain)
-    - Geração de relatórios forenses (MD/TXT/HTML)
+    Componentes:
+    - Diarização: pyannote.audio (detecção de falantes)
+    - Transcrição: whisperx (transcrição precisa com alinhamento)
+    - Identificação: speechbrain (reconhecimento por amostra de voz)
+    - Relatórios: MD/TXT/HTML com hash SHA-256 e metadados forenses
     """
     
     def __init__(self, config_path: str = "config.yaml"):
-        """Inicializa com configuração."""
+        """Inicializa o transcritor com configuração."""
         self.config = self._load_config(config_path)
         self.diarizer_pipeline = None
         self.transcription_model = None
         self.align_model = None
+        self.align_metadata = None
         self.speaker_classifier = None
         self.reference_embeddings: Dict[str, torch.Tensor] = {}
         self.speaker_map: Dict[str, str] = {}
         self.speaker_metadata: Dict[str, Dict] = {}
-        self.current_segments = []
-        self.current_audio_path = None
+        self.current_segments: List[Dict] = []
+        self.current_audio_path: Optional[str] = None
+        self.processing_log: List[Dict] = []
         
+        # Log de inicialização
+        self._log_event("system_init", {
+            "device": DEVICE,
+            "compute_type": COMPUTE_TYPE,
+            "timestamp": datetime.now().isoformat()
+        })
+    
     def _load_config(self, config_path: str) -> Dict:
         """Carrega configuração YAML."""
+        default_config = {
+            "huggingface_token": "",
+            "diarization_model": "pyannote/speaker-diarization-3.1",
+            "transcription_model": "large-v2",
+            "embedding_model": "speechbrain/spkrec-ecapa-voxceleb",
+            "language": "pt",
+            "speaker_identification_threshold": 0.75,
+            "min_speakers": 2,
+            "max_speakers": 5
+        }
+        
         if os.path.exists(config_path):
-            with open(config_path, "r", encoding="utf-8") as f:
-                return yaml.safe_load(f)
-        return {}
+            try:
+                with open(config_path, "r", encoding="utf-8") as f:
+                    user_config = yaml.safe_load(f) or {}
+                    default_config.update(user_config)
+            except Exception as e:
+                self._log_event("config_error", {"error": str(e)})
+        
+        return default_config
+    
+    def _log_event(self, event_type: str, data: Dict):
+        """Registra evento no log de processamento."""
+        self.processing_log.append({
+            "timestamp": datetime.now().isoformat(),
+            "event": event_type,
+            "data": data
+        })
+    
+    def _get_hf_token(self) -> Optional[str]:
+        """Obtém token do Hugging Face."""
+        token = self.config.get("huggingface_token", "")
+        if not token:
+            token = os.environ.get("HF_TOKEN", "")
+        return token if token else None
     
     # ==================== DIARIZAÇÃO ====================
     
     def _load_diarizer(self):
-        """Carrega pipeline de diarização."""
+        """Carrega pipeline de diarização (lazy loading)."""
         if self.diarizer_pipeline is None:
-            from pyannote.audio import Pipeline
-            from huggingface_hub import login
-            token = self.config.get("huggingface_token", "")
-            model = self.config.get("diarization_model", "pyannote/speaker-diarization-3.1")
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            
-            # Faz login com o token antes de carregar o pipeline
-            if token:
-                try:
+            try:
+                from pyannote.audio import Pipeline
+                from huggingface_hub import login
+                
+                token = self._get_hf_token()
+                model = self.config.get("diarization_model", "pyannote/speaker-diarization-3.1")
+                
+                if token:
                     login(token=token)
-                except Exception as e:
-                    print(f"Aviso: Não foi possível fazer login no Hugging Face: {e}")
+                    self._log_event("hf_login", {"status": "success"})
+                
                 self.diarizer_pipeline = Pipeline.from_pretrained(model)
-            else:
-                self.diarizer_pipeline = Pipeline.from_pretrained(model)
-            
-            self.diarizer_pipeline.to(torch.device(device))
-    def diarize(self, audio_path: str, min_speakers: int = 2, max_speakers: int = 5) -> List[Dict]:
+                self.diarizer_pipeline.to(torch.device(DEVICE))
+                self._log_event("diarizer_loaded", {"model": model, "device": DEVICE})
+                
+            except Exception as e:
+                self._log_event("diarizer_error", {"error": str(e), "traceback": traceback.format_exc()})
+                raise RuntimeError(f"Falha ao carregar diarizador: {str(e)}")
+    
+    def diarize(self, audio_path: str, min_speakers: int = None, max_speakers: int = None) -> List[Dict]:
         """Realiza diarização do áudio."""
         self._load_diarizer()
-        diarization = self.diarizer_pipeline(audio_path, min_speakers=min_speakers, max_speakers=max_speakers)
+        
+        min_spk = min_speakers or self.config.get("min_speakers", 2)
+        max_spk = max_speakers or self.config.get("max_speakers", 5)
+        
+        diarization = self.diarizer_pipeline(
+            audio_path, 
+            min_speakers=min_spk, 
+            max_speakers=max_spk
+        )
         
         segments = []
         for turn, _, speaker in diarization.itertracks(yield_label=True):
             segments.append({
-                "start": turn.start,
-                "end": turn.end,
+                "start": float(turn.start),
+                "end": float(turn.end),
                 "speaker": speaker,
                 "confidence": 1.0
             })
+        
+        self._log_event("diarization_complete", {
+            "segments_count": len(segments),
+            "speakers_count": len(set(s["speaker"] for s in segments))
+        })
+        
         return segments
     
     # ==================== TRANSCRIÇÃO ====================
     
     def _load_transcriber(self):
-        """Carrega modelo de transcrição."""
+        """Carrega modelo de transcrição (lazy loading)."""
         if self.transcription_model is None:
-            import whisperx
-            model_name = self.config.get("transcription_model", "large-v2")
-            language = self.config.get("language", "pt")
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            compute_type = "float16" if device == "cuda" else "float32"
-            
-            self.transcription_model = whisperx.load_model(model_name, device, compute_type=compute_type, language=language)
-            self.align_model, self.metadata = whisperx.load_align_model(language_code=language, device=device)
+            try:
+                import whisperx
+                
+                model_name = self.config.get("transcription_model", "large-v2")
+                language = self.config.get("language", "pt")
+                
+                self.transcription_model = whisperx.load_model(
+                    model_name, 
+                    DEVICE, 
+                    compute_type=COMPUTE_TYPE, 
+                    language=language
+                )
+                
+                self.align_model, self.align_metadata = whisperx.load_align_model(
+                    language_code=language, 
+                    device=DEVICE
+                )
+                
+                self._log_event("transcriber_loaded", {
+                    "model": model_name,
+                    "language": language,
+                    "device": DEVICE
+                })
+                
+            except Exception as e:
+                self._log_event("transcriber_error", {"error": str(e), "traceback": traceback.format_exc()})
+                raise RuntimeError(f"Falha ao carregar transcritor: {str(e)}")
     
     def transcribe(self, audio_path: str) -> Dict[str, Any]:
         """Transcreve áudio com alinhamento fonético."""
         self._load_transcriber()
+        
+        # Transcrição inicial
         result = self.transcription_model.transcribe(audio_path, batch_size=16)
         language = result.get("language", self.config.get("language", "pt"))
         
+        # Alinhamento fonético
         result_aligned = whisperx.align(
-            result["segments"], self.align_model, self.metadata, audio_path, 
-            "cuda" if torch.cuda.is_available() else "cpu", return_char_alignments=False
+            result["segments"], 
+            self.align_model, 
+            self.align_metadata, 
+            audio_path, 
+            DEVICE, 
+            return_char_alignments=False
         )
         
-        return {"segments": result_aligned["segments"], "language": language, "text": result.get("text", "")}
+        self._log_event("transcription_complete", {
+            "language": language,
+            "segments_count": len(result_aligned.get("segments", []))
+        })
+        
+        return {
+            "segments": result_aligned.get("segments", []),
+            "language": language,
+            "text": result.get("text", "")
+        }
     
-    # ==================== IDENTIFICAÇÃO ====================
+    # ==================== IDENTIFICAÇÃO DE FALANTES ====================
     
     def _load_speaker_classifier(self):
-        """Carrega classificador de falantes."""
+        """Carrega classificador de falantes (lazy loading)."""
         if self.speaker_classifier is None:
-            from speechbrain.inference.speaker import EncoderClassifier
-            model_name = self.config.get("embedding_model", "speechbrain/spkrec-ecapa-voxceleb")
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            self.speaker_classifier = EncoderClassifier.from_hparams(
-                source=model_name, savedir=os.path.join("models", model_name.replace("/", "_")), run_opts={"device": device}
-            )
+            try:
+                from speechbrain.inference.speaker import EncoderClassifier
+                
+                model_name = self.config.get("embedding_model", "speechbrain/spkrec-ecapa-voxceleb")
+                save_dir = os.path.join("models", model_name.replace("/", "_"))
+                
+                self.speaker_classifier = EncoderClassifier.from_hparams(
+                    source=model_name, 
+                    savedir=save_dir, 
+                    run_opts={"device": DEVICE}
+                )
+                
+                self._log_event("speaker_classifier_loaded", {
+                    "model": model_name,
+                    "device": DEVICE
+                })
+                
+            except Exception as e:
+                self._log_event("classifier_error", {"error": str(e), "traceback": traceback.format_exc()})
+                raise RuntimeError(f"Falha ao carregar classificador: {str(e)}")
     
     def _extract_embedding(self, audio_path: str, start: float = None, end: float = None) -> Optional[torch.Tensor]:
         """Extrai embedding de voz de segmento."""
         self._load_speaker_classifier()
+        
         try:
             waveform, sample_rate = torchaudio.load(audio_path)
-            if start is not None and end is not None:
-                waveform = waveform[:, int(start * sample_rate):int(end * sample_rate)]
             
-            if waveform.shape[1] < sample_rate * 0.5:
+            if start is not None and end is not None:
+                start_sample = int(start * sample_rate)
+                end_sample = int(end * sample_rate)
+                waveform = waveform[:, start_sample:end_sample]
+            
+            # Verifica se o segmento é longo o suficiente (mínimo 0.5s)
+            min_samples = sample_rate * 0.5
+            if waveform.shape[1] < min_samples:
                 return None
             
             embedding = self.speaker_classifier.encode_batch(waveform)
             return torch.nn.functional.normalize(embedding, p=2, dim=1).squeeze(0)
+            
         except Exception as e:
-            print(f"Erro ao extrair embedding: {e}")
+            self._log_event("embedding_error", {"error": str(e)})
             return None
     
     def register_reference(self, name: str, audio_path: str) -> bool:
-        """Registra amostra de referência."""
+        """Registra amostra de referência para identificação."""
         embedding = self._extract_embedding(audio_path)
         if embedding is not None:
-            self.reference_embeddings[name] = embedding
+            self.reference_embeddings[name.strip()] = embedding
+            self._log_event("reference_registered", {"name": name.strip()})
             return True
         return False
     
     def identify_speaker(self, embedding: torch.Tensor) -> Tuple[Optional[str], float]:
-        """Identifica falante comparando com referências."""
+        """Identifica falante comparando com referências registradas."""
         if not self.reference_embeddings:
             return None, 0.0
         
-        embedding = torch.nn.functional.normalize(embedding.unsqueeze(0), p=2, dim=1).squeeze(0)
+        embedding_normalized = torch.nn.functional.normalize(
+            embedding.unsqueeze(0), p=2, dim=1
+        ).squeeze(0)
+        
         best_match, best_score = None, 0.0
         
         for name, ref_embedding in self.reference_embeddings.items():
-            similarity = torch.dot(embedding, ref_embedding).item()
+            similarity = torch.dot(embedding_normalized, ref_embedding).item()
             if similarity > best_score:
                 best_score = similarity
                 best_match = name
         
         threshold = self.config.get("speaker_identification_threshold", 0.75)
-        return (best_match, best_score) if best_score >= threshold else (None, best_score)
+        
+        if best_score >= threshold:
+            return best_match, best_score
+        return None, best_score
     
     def identify_segments(self, segments: List[Dict], audio_path: str) -> List[Dict]:
-        """Identifica falantes em segmentos."""
+        """Identifica falantes em todos os segmentos."""
         identified = []
+        identified_count = 0
+        
         for segment in segments:
-            embedding = self._extract_embedding(audio_path, segment["start"], segment["end"])
+            embedding = self._extract_embedding(
+                audio_path, 
+                segment["start"], 
+                segment["end"]
+            )
+            
             result = segment.copy()
             result["identified_as"] = None
             result["confidence"] = 0.0
@@ -178,19 +313,36 @@ class ForensicTranscriber:
                 identified_name, score = self.identify_speaker(embedding)
                 result["identified_as"] = identified_name
                 result["confidence"] = score
+                if identified_name:
+                    identified_count += 1
             
             identified.append(result)
+        
+        self._log_event("identification_complete", {
+            "total_segments": len(segments),
+            "identified_count": identified_count
+        })
+        
         return identified
     
-    # ==================== MAPEAMENTO ====================
+    # ==================== MAPEAMENTO DE FALANTES ====================
     
     def map_speaker(self, speaker_id: str, name: str, confidence: float = 1.0, method: str = "manual"):
-        """Mapeia ID para nome."""
-        self.speaker_map[speaker_id] = name
-        self.speaker_metadata[speaker_id] = {"confidence": confidence, "method": method}
+        """Mapeia ID de falante para nome."""
+        self.speaker_map[speaker_id] = name.strip()
+        self.speaker_metadata[speaker_id] = {
+            "confidence": confidence,
+            "method": method,
+            "mapped_at": datetime.now().isoformat()
+        }
+        self._log_event("speaker_mapped", {
+            "speaker_id": speaker_id,
+            "name": name.strip(),
+            "method": method
+        })
     
     def get_speaker_name(self, speaker_id: str) -> str:
-        """Obtém nome do falante."""
+        """Obtém nome do falante a partir do ID."""
         return self.speaker_map.get(speaker_id, speaker_id)
     
     def auto_map_from_identification(self, identified_segments: List[Dict]):
@@ -209,6 +361,7 @@ class ForensicTranscriber:
                     speaker_votes[speaker_id][identified_as] = []
                 speaker_votes[speaker_id][identified_as].append(confidence)
         
+        mapped_count = 0
         for speaker_id, votes in speaker_votes.items():
             best_name, best_avg = None, 0.0
             for name, scores in votes.items():
@@ -219,15 +372,22 @@ class ForensicTranscriber:
             
             if best_name and best_avg >= 0.5:
                 self.map_speaker(speaker_id, best_name, best_avg, "automatic")
+                mapped_count += 1
+        
+        self._log_event("auto_mapping_complete", {"mapped_count": mapped_count})
     
     def get_all_mappings(self) -> List[Dict]:
-        """Retorna todos os mapeamentos."""
+        """Retorna todos os mapeamentos de falantes."""
         return [
-            {"speaker_id": sid, "name": name, **self.speaker_metadata.get(sid, {})}
+            {
+                "speaker_id": sid,
+                "name": name,
+                **self.speaker_metadata.get(sid, {})
+            }
             for sid, name in self.speaker_map.items()
         ]
     
-    # ==================== FORMATAÇÃO ====================
+    # ==================== UTILITÁRIOS FORENSES ====================
     
     def format_timestamp(self, seconds: float) -> str:
         """Formata segundos em HH:MM:SS.mmm."""
@@ -239,6 +399,39 @@ class ForensicTranscriber:
         if hours > 0:
             return f"{hours:02d}:{minutes:02d}:{int(secs):02d}.{millis:03d}"
         return f"{minutes:02d}:{int(secs):02d}.{millis:03d}"
+    
+    def compute_file_hash(self, filepath: str) -> str:
+        """Computa hash SHA-256 do arquivo para integridade forense."""
+        sha256_hash = hashlib.sha256()
+        with open(filepath, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(chunk)
+        return sha256_hash.hexdigest()
+    
+    def get_audio_metadata(self, audio_path: str) -> Dict:
+        """Extrai metadados técnicos do áudio."""
+        try:
+            info = torchaudio.info(audio_path)
+            duration = info.num_frames / info.sample_rate
+            
+            return {
+                "filepath": audio_path,
+                "filename": os.path.basename(audio_path),
+                "sample_rate": info.sample_rate,
+                "channels": info.num_channels,
+                "frames": info.num_frames,
+                "duration_seconds": duration,
+                "duration_formatted": self.format_timestamp(duration),
+                "file_hash": self.compute_file_hash(audio_path),
+                "processed_at": datetime.now().isoformat()
+            }
+        except Exception as e:
+            return {
+                "filepath": audio_path,
+                "filename": os.path.basename(audio_path),
+                "error": str(e),
+                "processed_at": datetime.now().isoformat()
+            }
     
     def generate_markdown(self, segments: List[Dict], metadata: Dict, speaker_map: Dict[str, str]) -> str:
         """Gera relatório Markdown."""
@@ -361,45 +554,8 @@ class ForensicTranscriber:
         ]
         
         metadata["total_duration_formatted"] = self.format_timestamp(metadata.get("total_duration", 0))
-        template = env.from_string(template_str)
+        template = Template(template_str)
         return template.render(segments=formatted_segs, metadata=metadata, speaker_mappings=metadata.get("speaker_mappings", []))
-    
-    def generate_report(self, audio_path: str, segments: List[Dict], formats: List[str] = None) -> Dict[str, str]:
-        """Gera relatório nos formatos especificados."""
-        if formats is None:
-            formats = ["markdown", "txt", "html"]
-        
-        output_dir = self.config.get("output_dir", "output")
-        os.makedirs(output_dir, exist_ok=True)
-        
-        speaker_map = {m["speaker_id"]: m["name"] for m in self.get_all_mappings()}
-        metadata = {
-            "audio_file": os.path.basename(audio_path),
-            "audio_path": os.path.abspath(audio_path),
-            "processing_date": datetime.now().isoformat(),
-            "total_duration": max(seg.get("end", 0) for seg in segments) if segments else 0,
-            "total_segments": len(segments),
-            "speaker_mappings": self.get_all_mappings()
-        }
-        
-        generators = {
-            "markdown": lambda: self.generate_markdown(segments, metadata, speaker_map),
-            "txt": lambda: self.generate_txt(segments, metadata, speaker_map),
-            "html": lambda: self.generate_html(segments, metadata, speaker_map)
-        }
-        
-        generated = {}
-        for fmt in formats:
-            if fmt in generators:
-                content = generators[fmt]()
-                ext = {"markdown": ".md", "txt": ".txt", "html": ".html"}[fmt]
-                filename = f"forense_{os.path.splitext(os.path.basename(audio_path))[0]}{ext}"
-                filepath = os.path.join(output_dir, filename)
-                with open(filepath, "w", encoding="utf-8") as f:
-                    f.write(content)
-                generated[fmt] = filepath
-        
-        return generated
     
     # ==================== PROCESSAMENTO PRINCIPAL ====================
     
